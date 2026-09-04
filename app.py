@@ -43,4 +43,4 @@ def api_status():
 
 # 4. Standard Gradio Launch: Hugging Face automatically handles port 7860
 if __name__ == "__main__":
-    demo.launch()
+    demo.launch(ssr_mode=False)
