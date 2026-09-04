@@ -1,0 +1,8 @@
+ghostReveal_env_
+
+__pycache__/
+*.pyc
+
+.env
+personal_instructions.txt
+ign
