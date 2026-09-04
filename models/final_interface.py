@@ -5,21 +5,31 @@ import json
 import os
 
 IMG_SIZE = 300
-# grad_cam_model = tf.keras.models.load_model("models/final_model_defactify/config.json")
-model_dir = "models/final_model_defactify"
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+model_dir = os.path.join(BASE_DIR, "final_model_defactify")
 
 def load_model():
-    with open(f"{model_dir}/config.json", "r") as f:
+    config_path = os.path.join(model_dir, "config.json")
+    weights_path = os.path.join(model_dir, "model.weights.h5")
+
+    if not os.path.exists(config_path):
+        raise FileNotFoundError(f"Model config not found at: {config_path}")
+
+    with open(config_path, "r") as f:
         config = json.load(f)
 
     grad_cam_model = tf.keras.models.model_from_json(
         json.dumps(config)
     )
 
+    if not os.path.exists(weights_path):
+        raise FileNotFoundError(
+            f"Weights file not found at '{weights_path}'. "
+            "Please ensure 'model.weights.h5' is placed in 'models/final_model_defactify/'."
+        )
+
     # Load trained weights
-    grad_cam_model.load_weights(
-        f"{model_dir}/model.weights.h5"
-    )
+    grad_cam_model.load_weights(weights_path)
 
     return grad_cam_model
 

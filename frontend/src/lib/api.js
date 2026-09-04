@@ -1,4 +1,5 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "/api";
+const rawBaseUrl = import.meta.env.VITE_API_BASE_URL || "/api";
+const API_BASE_URL = rawBaseUrl.replace(/\/+$/, "");
 
 /**
  * Sends an image to the GhostReveal backend for prediction.
