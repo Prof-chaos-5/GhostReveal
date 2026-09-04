@@ -6,7 +6,17 @@ import Logo from "../components/Logo";
 // Normalize so <img src> always gets something it can render.
 function toImageSrc(value) {
   if (!value) return null;
-  return value.startsWith("data:") ? value : `data:image/png;base64,${value}`;
+  if (typeof value === "object" && value.url) return value.url;
+  if (
+    typeof value === "string" &&
+    (value.startsWith("data:") ||
+      value.startsWith("http://") ||
+      value.startsWith("https://") ||
+      value.startsWith("/"))
+  ) {
+    return value;
+  }
+  return `data:image/png;base64,${value}`;
 }
 
 export default function Result() {
