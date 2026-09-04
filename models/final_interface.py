@@ -8,6 +8,16 @@ IMG_SIZE = 300
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 model_dir = os.path.join(BASE_DIR, "final_model_defactify")
 
+def _sanitize_config(obj):
+    if isinstance(obj, dict):
+        obj.pop("quantization_config", None)
+        for v in obj.values():
+            _sanitize_config(v)
+    elif isinstance(obj, list):
+        for item in obj:
+            _sanitize_config(item)
+    return obj
+
 def load_model():
     config_path = os.path.join(model_dir, "config.json")
     weights_path = os.path.join(model_dir, "model.weights.h5")
@@ -17,6 +27,8 @@ def load_model():
 
     with open(config_path, "r") as f:
         config = json.load(f)
+
+    _sanitize_config(config)
 
     grad_cam_model = tf.keras.models.model_from_json(
         json.dumps(config)
