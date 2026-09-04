@@ -37,6 +37,9 @@ def root():
 def health_check():
     return {"status": "healthy"}
 
+# Close any dangling Gradio instances
+gr.close_all()
+
 # 4. Gradio Interface (Runs on Hugging Face Free Tier)
 with gr.Blocks(title="GhostReveal API") as demo:
     gr.Markdown("# 👻 GhostReveal API Server")
@@ -55,5 +58,15 @@ with gr.Blocks(title="GhostReveal API") as demo:
 app = gr.mount_gradio_app(fastapi_app, demo, path="/")
 
 if __name__ == "__main__":
+    import time
     port = int(os.environ.get("PORT", 7860))
-    uvicorn.run(app, host="0.0.0.0", port=port)
+    for attempt in range(5):
+        try:
+            uvicorn.run(app, host="0.0.0.0", port=port)
+            break
+        except OSError as e:
+            if e.errno == 98 and attempt < 4:
+                print(f"Port {port} busy, waiting 3s for release (attempt {attempt+1}/5)...")
+                time.sleep(3)
+            else:
+                raise e
