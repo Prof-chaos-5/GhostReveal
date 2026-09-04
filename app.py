@@ -1,14 +1,44 @@
 import os
 import sys
-import gradio as gr
 from fastapi.middleware.cors import CORSMiddleware
+import gradio as gr
+
+# Support Hugging Face ZeroGPU environment
+try:
+    import spaces
+except ImportError:
+    class MockSpaces:
+        @staticmethod
+        def GPU(fn=None, duration=None):
+            if fn is not None:
+                return fn
+            def decorator(f):
+                return f
+            return decorator
+    spaces = MockSpaces()
 
 # Ensure repository root is on sys.path
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from backend.app.routes.predict import predict_router
 
-# 1. Define Gradio Interface (Runs natively on Hugging Face Free Tier)
+@spaces.GPU
+def predict_gradio(image):
+    if image is None:
+        return "Please upload an image.", 0.0, None
+    try:
+        from PIL import Image
+        from backend.app.routes.predict import get_model
+        from models.final_interface import predict
+        
+        pil_img = Image.fromarray(image).convert("RGB")
+        active_model = get_model()
+        prediction, confidence, grad_cam = predict(pil_img, active_model)
+        return prediction, float(confidence), grad_cam
+    except Exception as e:
+        return f"Error: {str(e)}", 0.0, None
+
+# 1. Define Gradio Interface (Interactive UI + API endpoints)
 with gr.Blocks(title="GhostReveal API") as demo:
     gr.Markdown("# 👻 GhostReveal API Server")
     gr.Markdown(
@@ -19,6 +49,21 @@ with gr.Blocks(title="GhostReveal API") as demo:
         - `POST /predict/` — Accepts an image file (`img`) and returns prediction, confidence, and Grad-CAM heatmap.
         - `GET /health` — Service health check.
         """
+    )
+
+    with gr.Row():
+        with gr.Column():
+            img_input = gr.Image(label="Test Image Upload", type="numpy")
+            btn = gr.Button("Analyze Image", variant="primary")
+        with gr.Column():
+            verdict_output = gr.Textbox(label="Verdict")
+            conf_output = gr.Number(label="Confidence")
+            heatmap_output = gr.Image(label="Grad-CAM Heatmap")
+
+    btn.click(
+        fn=predict_gradio,
+        inputs=img_input,
+        outputs=[verdict_output, conf_output, heatmap_output]
     )
 
 # 2. Attach CORS middleware directly to the Gradio FastAPI application
