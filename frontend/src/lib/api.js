@@ -1,4 +1,5 @@
 const rawBaseUrl = import.meta.env.VITE_API_BASE_URL || "";
+const HF_TOKEN = import.meta.env.VITE_HF_TOKEN || "";
 
 function normalizeBaseUrl(url) {
   if (!url) return "";
@@ -15,10 +16,16 @@ function normalizeBaseUrl(url) {
 
 const API_BASE_URL = normalizeBaseUrl(rawBaseUrl);
 
+function getAuthHeaders() {
+  return HF_TOKEN ? { Authorization: `Bearer ${HF_TOKEN}` } : {};
+}
+
 /**
  * Predicts using the Gradio API (Hugging Face Spaces).
  */
 async function predictViaGradio(baseUrl, file) {
+  const authHeaders = getAuthHeaders();
+
   // 1. Upload file to Gradio's upload endpoint
   const formData = new FormData();
   formData.append("files", file, file.name || "image.png");
@@ -27,6 +34,7 @@ async function predictViaGradio(baseUrl, file) {
   try {
     uploadRes = await fetch(`${baseUrl}/gradio_api/upload`, {
       method: "POST",
+      headers: authHeaders,
       body: formData,
     });
   } catch {
@@ -47,7 +55,10 @@ async function predictViaGradio(baseUrl, file) {
   // 2. Initiate predict_gradio job
   const callRes = await fetch(`${baseUrl}/gradio_api/call/predict_gradio`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      ...authHeaders,
+    },
     body: JSON.stringify({
       data: [
         {
@@ -69,7 +80,9 @@ async function predictViaGradio(baseUrl, file) {
   }
 
   // 3. Listen to SSE event stream
-  const streamRes = await fetch(`${baseUrl}/gradio_api/call/predict_gradio/${event_id}`);
+  const streamRes = await fetch(`${baseUrl}/gradio_api/call/predict_gradio/${event_id}`, {
+    headers: authHeaders,
+  });
   if (!streamRes.ok) {
     throw new Error(`Failed to retrieve prediction stream: ${streamRes.status}`);
   }

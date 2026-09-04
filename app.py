@@ -29,7 +29,7 @@ from backend.app.utils.predict_utils import validateImageType
 from backend.app.routes.predict import get_model
 from models.final_interface import predict
 
-@spaces.GPU
+@spaces.GPU(duration=10)
 def predict_gradio(image):
     if image is None:
         return "Please upload an image.", 0.0, None
