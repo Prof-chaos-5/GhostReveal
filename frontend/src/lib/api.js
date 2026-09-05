@@ -26,8 +26,29 @@ logger.info("API initialized", {
   hasHfToken: Boolean(HF_TOKEN),
 });
 
-function getAuthHeaders() {
-  return HF_TOKEN ? { Authorization: `Bearer ${HF_TOKEN}` } : {};
+export function getHfToken() {
+  if (typeof window !== "undefined") {
+    const stored = localStorage.getItem("ghostreveal_hf_token");
+    if (stored) return stored.trim();
+  }
+  return (HF_TOKEN || "").trim();
+}
+
+export function setHfToken(token) {
+  if (typeof window !== "undefined") {
+    if (token && token.trim()) {
+      localStorage.setItem("ghostreveal_hf_token", token.trim());
+      logger.info("Saved Hugging Face Access Token to browser storage.");
+    } else {
+      localStorage.removeItem("ghostreveal_hf_token");
+      logger.info("Removed Hugging Face Access Token from browser storage.");
+    }
+  }
+}
+
+export function getAuthHeaders() {
+  const token = getHfToken();
+  return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
 /**
