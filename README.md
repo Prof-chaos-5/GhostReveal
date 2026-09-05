@@ -111,9 +111,9 @@ The classifier lives in `models/final_model_defactify/` and is loaded via `model
 
 | Metric | Value |
 |---|---|
-| Accuracy |98.86% |
-| F1 (binary) | 97.53% |
-| AUC | 98.97% |
+| Accuracy |96.86% |
+| F1 (binary) | 94.93% |
+| AUC | 97.27% |
 
 *(Trained/evaluated on a random split of the Defactify dataset — see [Future Scope](#future-scope--research-directions) for the more rigorous held-out-generator evaluation planned next.)*
 
