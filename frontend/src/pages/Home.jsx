@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import Logo from "../components/Logo";
 import ScanUploader from "../components/ScanUploader";
 import { predictImage } from "../lib/api";
+import { logger } from "../lib/logger";
 
 export default function Home() {
   const navigate = useNavigate();
@@ -15,20 +16,31 @@ export default function Home() {
   const handleFileSelected = (picked, error) => {
     setSubmitError(null);
     if (error) {
+      logger.warn(`File selection rejected: ${error}`);
       setPickError(error);
       return;
     }
     setPickError(null);
     setFile(picked);
-    setPreviewUrl(picked ? URL.createObjectURL(picked) : null);
+    if (picked) {
+      logger.info(
+        `File selected: "${picked.name}" (${(picked.size / 1024).toFixed(1)} KB, type: ${picked.type || "unknown"})`
+      );
+      setPreviewUrl(URL.createObjectURL(picked));
+    } else {
+      setPreviewUrl(null);
+    }
   };
 
   const handleAnalyze = async () => {
     if (!file || scanning) return;
     setScanning(true);
     setSubmitError(null);
+    logger.info(`Starting analysis for image "${file.name}"...`);
+
     try {
       const result = await predictImage(file);
+      logger.info(`Analysis succeeded! Navigating to /result.`, result);
       navigate("/result", {
         state: {
           prediction: result.prediction,
@@ -38,6 +50,7 @@ export default function Home() {
         },
       });
     } catch (err) {
+      logger.error(`Analysis failed for "${file.name}": ${err.message}`, err);
       setSubmitError(err.message);
       setScanning(false);
     }
@@ -69,7 +82,16 @@ export default function Home() {
         />
 
         {submitError && (
-          <p className="-mt-4 text-center text-[13px] text-signal-ai">{submitError}</p>
+          <div className="-mt-4 flex flex-col items-center gap-1.5 rounded-xl border border-signal-ai/30 bg-signal-ai-soft p-3 text-center">
+            <p className="text-[13px] font-medium text-signal-ai">{submitError}</p>
+            <button
+              type="button"
+              onClick={() => logger.openViewer()}
+              className="font-mono text-[11px] font-semibold text-signal-ai underline underline-offset-2 hover:opacity-80 transition-opacity"
+            >
+              View detailed error logs →
+            </button>
+          </div>
         )}
 
         <button

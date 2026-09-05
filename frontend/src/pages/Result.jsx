@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import Logo from "../components/Logo";
+import { logger } from "../lib/logger";
 
 // Backend may send grad_cam as a bare base64 string or a full data URI.
 // Normalize so <img src> always gets something it can render.
@@ -25,7 +26,16 @@ export default function Result() {
   const [showGradCam, setShowGradCam] = useState(false);
 
   useEffect(() => {
-    if (!state) navigate("/", { replace: true });
+    if (!state) {
+      logger.warn("Navigated to /result without prediction state. Redirecting to home.");
+      navigate("/", { replace: true });
+    } else {
+      logger.info("Rendered result page with data:", {
+        prediction: state.prediction,
+        confidence: state.confidence,
+        hasGradCam: Boolean(state.gradCam),
+      });
+    }
   }, [state, navigate]);
 
   if (!state) return null;
@@ -55,6 +65,12 @@ export default function Result() {
         bar: "bg-signal-ai",
         ring: "shadow-[0_0_0_3px_var(--color-signal-ai-soft),0_0_24px_-6px_var(--color-signal-ai)]",
       };
+
+  const handleToggleGradCam = () => {
+    const next = !showGradCam;
+    logger.info(`Toggled Grad-CAM view: ${next ? "Heatmap" : "Original image"}`);
+    setShowGradCam(next);
+  };
 
   return (
     <div className="mx-auto flex min-h-screen max-w-[560px] flex-col px-6">
@@ -108,7 +124,7 @@ export default function Result() {
 
         {gradCamSrc && (
           <button
-            onClick={() => setShowGradCam((prev) => !prev)}
+            onClick={handleToggleGradCam}
             className="w-full rounded-xl border border-accent/30 bg-accent-soft py-3.5 text-center font-display
               text-[15px] font-medium text-accent transition-colors hover:bg-accent/10 focus-visible:outline
               focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
