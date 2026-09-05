@@ -94,9 +94,8 @@ export default function Home() {
           className="flex items-center gap-1.5 rounded-full border border-paper-line bg-white/70 px-3 py-1 font-mono text-[11px] text-ink-soft transition-colors hover:bg-white hover:text-ink"
         >
           <span
-            className={`h-1.5 w-1.5 rounded-full ${
-              activeToken ? "bg-signal-real" : "bg-ink-soft/40"
-            }`}
+            className={`h-1.5 w-1.5 rounded-full ${activeToken ? "bg-signal-real" : "bg-ink-soft/40"
+              }`}
           />
           <span>{activeToken ? "HF Token Active" : "Add HF Token"}</span>
         </button>
@@ -279,7 +278,7 @@ export default function Home() {
       )}
 
       <footer className="py-6 text-center font-mono text-[11px] text-ink-soft">
-        College project · results are for demonstration purposes
+
       </footer>
     </div>
   );
