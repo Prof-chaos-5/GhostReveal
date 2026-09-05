@@ -1,7 +1,7 @@
 import { logger } from "./logger";
 
 const rawBaseUrl = import.meta.env.VITE_API_BASE_URL || "";
-const HF_TOKEN = import.meta.env.VITE_HF_TOKEN || "";
+const HF_TOKEN = import.meta.env.HF_TOKEN || "";
 
 function normalizeBaseUrl(url) {
   if (!url) return "";
