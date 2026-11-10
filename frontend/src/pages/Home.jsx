@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Logo from "../components/Logo";
 import ScanUploader from "../components/ScanUploader";
 import { predictImage, getHfToken, setHfToken } from "../lib/api";
@@ -193,16 +193,42 @@ export default function Home() {
           </div>
         )}
 
-        <button
-          onClick={() => handleAnalyzeWithFile(file)}
-          disabled={!file || scanning}
-          className="w-full rounded-xl bg-ink py-3.5 font-display text-[15px] font-medium text-paper
-            transition-opacity duration-150 disabled:cursor-not-allowed disabled:opacity-30
-            hover:opacity-90 focus-visible:outline focus-visible:outline-2
-            focus-visible:outline-offset-2 focus-visible:outline-accent"
-        >
-          {scanning ? "Analyzing…" : "Analyze image"}
-        </button>
+        <div className="flex-row items-center justify-center  mt-0">
+          <button
+            onClick={() => handleAnalyzeWithFile(file)}
+            disabled={!file || scanning}
+            className="w-full  rounded-xl bg-ink py-3.5 font-display text-[15px] font-medium text-paper
+              transition-opacity duration-150 disabled:cursor-not-allowed disabled:opacity-30
+              hover:opacity-90 focus-visible:outline focus-visible:outline-2
+              focus-visible:outline-offset-2 focus-visible:outline-accent"
+          >
+            {scanning ? "Analyzing…" : "Analyze image"}
+          </button>
+
+          <div className="flex items-center justify-center">
+            <Link
+              to="/predict-text"
+              className="group mt-5 inline-flex items-center gap-2
+                text-sm font-medium text-slate-500
+                transition-colors duration-200
+                hover:text-indigo-600
+                focus-visible:outline-none
+                focus-visible:ring-2 focus-visible:ring-indigo-500
+                focus-visible:ring-offset-4 rounded-md"
+            >
+              <span>Want to check writing instead?</span>
+
+              <span className="inline-flex items-center gap-1 font-semibold text-indigo-600
+                group-hover:gap-2 transition-all duration-200">
+                Analyze text
+                <span className="transition-transform duration-200
+                  group-hover:translate-x-1">
+                  →
+                </span>
+              </span>
+            </Link>
+          </div>
+        </div>
       </main>
 
       {/* Manual Token Configuration Modal */}
